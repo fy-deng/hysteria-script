@@ -48,8 +48,8 @@ inst_cert(){
     echo ""
     read -rp "请输入选项 [1-3]: " certInput
     if [[ $certInput == 2 ]]; then
-        if [[ -f /root/cert.crt && -f /root/private.key ]] && [[ -s /root/cert.crt && -s /root/private.key ]] && [[ -f /root/ca.log ]]; then
-            domain=$(cat /root/ca.log)
+        if [[ -f /etc/ssl/private/cert.crt && -f /etc/ssl/private/private.key ]] && [[ -s /etc/ssl/private/cert.crt && -s /etc/ssl/private/private.key ]] && [[ -f /etc/ssl/private/ca.log ]]; then
+            domain=$(cat /etc/ssl/private/ca.log)
             green "检测到原有域名：$domain 的证书，正在应用"
             hy_ym=$domain
         else
@@ -89,14 +89,14 @@ inst_cert(){
                 else
                     bash ~/.acme.sh/acme.sh --issue -d ${domain} --standalone -k ec-256 --insecure
                 fi
-                bash ~/.acme.sh/acme.sh --install-cert -d ${domain} --key-file /root/private.key --fullchain-file /root/cert.crt --ecc
-                if [[ -f /root/cert.crt && -f /root/private.key ]] && [[ -s /root/cert.crt && -s /root/private.key ]]; then
-                    echo $domain > /root/ca.log
+                bash ~/.acme.sh/acme.sh --install-cert -d ${domain} --key-file /etc/ssl/private/private.key --fullchain-file /etc/ssl/private/cert.crt --ecc
+                if [[ -f /etc/ssl/private/cert.crt && -f /etc/ssl/private/private.key ]] && [[ -s /etc/ssl/private/cert.crt && -s /etc/ssl/private/private.key ]]; then
+                    echo $domain > /etc/ssl/private/ca.log
                     sed -i '/--cron/d' /etc/crontab >/dev/null 2>&1
                     echo "0 0 * * * root bash /root/.acme.sh/acme.sh --cron -f >/dev/null 2>&1" >> /etc/crontab
                     green "证书申请成功! 脚本申请到的证书 (cert.crt) 和私钥 (private.key) 文件已保存到 /root 文件夹下"
-                    yellow "证书crt文件路径如下: /root/cert.crt"
-                    yellow "私钥key文件路径如下: /root/private.key"
+                    yellow "证书crt文件路径如下: /etc/ssl/private/cert.crt"
+                    yellow "私钥key文件路径如下: /etc/ssl/private/private.key"
                     hy_ym=$domain
                 fi
             else
